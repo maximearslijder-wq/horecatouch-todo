@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HorecaTouch — Werklijst</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F3F0; --surface: #FFFFFF; --surface-2: #F9F8F6;
+    --border: #E8E6E1; --border-strong: #D4D0C8;
+    --text-primary: #1A1916; --text-secondary: #6B6860; --text-muted: #A8A49C;
+    --accent-soft: #EEECEA;
+    --green: #2D6A4F; --green-bg: #EAF4EF;
+    --amber: #92400E; --amber-bg: #FEF3C7;
+    --red: #991B1B; --red-bg: #FEE2E2;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --radius: 10px; --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; font-size: 14px; }
+
+  /* LOADING */
+  #loadingScreen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 999; gap: 16px;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--text-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loadingScreen p { font-size: 13px; color: var(--text-muted); }
+
+  /* LAYOUT */
+  .app-shell { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 28px 0;
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; overflow-y: auto;
+  }
+  .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .logo-mark { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .logo-name { font-size: 17px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; }
+  .logo-sync { font-size: 10px; color: var(--green); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+  .sync-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .sidebar-nav { flex: 1; padding: 0 12px; }
+  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); padding: 0 8px; margin: 16px 0 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px; padding: 7px 10px;
+    border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;
+    color: var(--text-secondary); transition: all 0.15s; margin-bottom: 1px;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--accent-soft); color: var(--text-primary); }
+  .nav-item.active { background: var(--text-primary); color: white; }
+  .nav-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .nav-count { margin-left: auto; font-size: 11px; font-family: 'DM Mono', monospace; opacity: 0.6; }
+
+  .sidebar-footer { padding: 16px 20px 0; border-top: 1px solid var(--border); margin-top: 8px; }
+  .progress-summary { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--text-primary); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* MAIN */
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-title { font-size: 15px; font-weight: 600; flex: 1; letter-spacing: -0.01em; }
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+  .search-input {
+    padding: 7px 12px 7px 32px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--surface-2);
+    width: 200px; outline: none; transition: all 0.2s;
+  }
+  .search-input:focus { border-color: var(--text-primary); background: white; width: 240px; }
+  .prio-filter {
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--surface-2); outline: none; cursor: pointer;
+  }
+  .btn { padding: 7px 16px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; }
+  .btn-primary { background: var(--text-primary); color: white; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost { background: none; border: 1px solid var(--border); color: var(--text-secondary); }
+  .btn-ghost:hover { border-color: var(--text-primary); color: var(--text-primary); }
+
+  /* CONTENT */
+  .content { padding: 28px 32px; max-width: 860px; }
+
+  /* CAT CARD */
+  .cat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
+  .cat-head {
+    display: flex; align-items: center; gap: 12px; padding: 13px 18px;
+    border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .cat-head:hover { background: var(--surface-2); }
+  .cat-stripe { width: 3px; height: 18px; border-radius: 2px; flex-shrink: 0; }
+  .cat-name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; flex: 1; }
+  .cat-meta { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); }
+  .cat-prog { width: 56px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .cat-prog-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .cat-actions { display: flex; gap: 2px; }
+  .icon-btn { width: 28px; height: 28px; border: none; background: none; cursor: pointer; color: var(--text-muted); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-size: 12px; }
+  .icon-btn:hover { background: var(--accent-soft); color: var(--text-primary); }
+  .icon-btn.danger:hover { background: var(--red-bg); color: var(--red); }
+  .chevron { transition: transform 0.2s; display: inline-block; }
+  .chevron.open { transform: rotate(90deg); }
+
+  /* SUBCAT */
+  .subcat-wrap { border-bottom: 1px solid var(--border); }
+  .subcat-head {
+    display: flex; align-items: center; gap: 8px; padding: 9px 18px 9px 28px;
+    background: var(--surface-2); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none;
+  }
+  .subcat-head:hover { background: #F0EEE9; }
+  .subcat-name { font-size: 13px; font-weight: 500; color: var(--text-secondary); flex: 1; }
+  .subcat-count { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-muted); }
+
+  /* TASKS */
+  .task-item {
+    display: flex; align-items: flex-start; gap: 11px; padding: 10px 18px 10px 46px;
+    border-bottom: 1px solid var(--border); transition: background 0.12s; position: relative; cursor: grab;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-item:hover { background: #FDFCFA; }
+  .task-item.dragging { opacity: 0.35; background: var(--accent-soft); }
+  .task-item.drag-over { background: #EBF4FF; border-top: 2px solid #1E3A5F; }
+  .drag-handle { position: absolute; left: 20px; top: 13px; color: var(--text-muted); opacity: 0; font-size: 12px; transition: opacity 0.15s; cursor: grab; }
+  .task-item:hover .drag-handle { opacity: 1; }
+  .task-check {
+    width: 16px; height: 16px; border: 1.5px solid var(--border-strong); border-radius: 4px;
+    flex-shrink: 0; cursor: pointer; margin-top: 2px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; background: white;
+  }
+  .task-check:hover { border-color: var(--text-primary); }
+  .task-check.checked { background: var(--text-primary); border-color: var(--text-primary); }
+  .task-check.checked::after { content: '✓'; color: white; font-size: 10px; font-weight: 700; }
+  .task-text { flex: 1; font-size: 13.5px; color: var(--text-primary); line-height: 1.45; }
+  .task-text.done { text-decoration: line-through; color: var(--text-muted); }
+  .task-right { display: flex; gap: 6px; align-items: center; flex-shrink: 0; margin-top: 1px; }
+  .prio-pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; cursor: pointer; transition: filter 0.15s; font-family: 'DM Mono', monospace; }
+  .prio-pill:hover { filter: brightness(0.9); }
+  .prio-Hoog { background: var(--red-bg); color: var(--red); }
+  .prio-Middel { background: var(--amber-bg); color: var(--amber); }
+  .prio-Laag { background: var(--green-bg); color: var(--green); }
+  .task-del { opacity: 0; transition: opacity 0.15s; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 0 2px; line-height: 1; }
+  .task-item:hover .task-del { opacity: 1; }
+  .task-del:hover { color: var(--red); }
+
+  /* ADD ROWS */
+  .add-task-row { display: flex; gap: 8px; padding: 8px 18px 8px 46px; background: var(--surface-2); border-top: 1px dashed var(--border); align-items: center; }
+  .add-task-row input { flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 12.5px; background: white; outline: none; transition: border-color 0.15s; }
+  .add-task-row input:focus { border-color: var(--text-primary); }
+  .add-task-row select { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 12px; background: white; outline: none; cursor: pointer; }
+  .add-task-row .add-btn { padding: 6px 14px; background: var(--text-primary); color: white; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; }
+  .add-task-row .add-btn:hover { opacity: 0.8; }
+
+  .add-subcat-row { display: flex; gap: 8px; padding: 8px 18px 8px 28px; background: #F6F5F2; border-top: 1px dashed var(--border); align-items: center; }
+  .add-subcat-row input { flex: 1; padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 12px; background: white; outline: none; }
+  .add-subcat-row input:focus { border-color: var(--text-primary); }
+  .add-subcat-row .add-btn { padding: 5px 12px; background: white; color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; }
+  .add-subcat-row .add-btn:hover { background: var(--text-primary); color: white; }
+  .add-subcat-row .lbl { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+  .general-lbl { padding: 7px 18px 3px 46px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; background: var(--surface-2); border-top: 1px solid var(--border); }
+  .empty-state { padding: 14px 46px; font-size: 12px; color: var(--text-muted); font-style: italic; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: var(--radius); padding: 28px; width: 380px; box-shadow: var(--shadow); }
+  .modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+  .modal input, .modal select { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13px; margin-bottom: 10px; outline: none; }
+  .modal input:focus, .modal select:focus { border-color: var(--text-primary); }
+  .modal-btns { display: flex; gap: 8px; margin-top: 4px; }
+  .modal-btns button { flex: 1; }
+
+  .saving-indicator { position: fixed; bottom: 20px; right: 20px; background: var(--text-primary); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 300; }
+  .saving-indicator.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <div class="spinner"></div>
+  <p>Verbinden met database...</p>
+</div>
+
+<div class="saving-indicator" id="savingIndicator">💾 Opgeslagen</div>
+
+<div class="app-shell" id="appShell" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">Werklijst</div>
+      <div class="logo-name">HorecaTouch</div>
+      <div class="logo-sync"><span class="sync-dot"></span> Live gesynchroniseerd</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="progress-summary" id="progressSummary"></div>
+      <div class="progress-track"><div class="progress-fill" id="globalProgress"></div></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Alle taken</div>
+      <div class="search-wrap">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" id="searchInput" placeholder="Zoeken..." oninput="render()">
+      </div>
+      <select class="prio-filter" id="filterPrio" onchange="render()">
+        <option value="">Alle prioriteiten</option>
+        <option value="Hoog">Hoog</option>
+        <option value="Middel">Middel</option>
+        <option value="Laag">Laag</option>
+      </select>
+      <button class="btn btn-ghost" onclick="exportCSV()">↓ Export</button>
+      <button class="btn btn-primary" onclick="openModal()">+ Categorie</button>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Nieuwe categorie</h3>
+    <input type="text" id="modalCatName" placeholder="Naam...">
+    <select id="modalCatColor">
+      <option value="#1E3A5F">Marine</option>
+      <option value="#1A1916">Zwart</option>
+      <option value="#2D6A4F">Groen</option>
+      <option value="#92400E">Amber</option>
+      <option value="#4C1D95">Violet</option>
+      <option value="#991B1B">Rood</option>
+      <option value="#374151">Grijs</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuleren</button>
+      <button class="btn btn-primary" onclick="confirmAddCat()">Toevoegen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyArC2KgrW8V9Wd02Q24FP4RXEXF5ydbyiY",
+  authDomain: "horecatouch-todo.firebaseapp.com",
+  projectId: "horecatouch-todo",
+  storageBucket: "horecatouch-todo.firebasestorage.app",
+  messagingSenderId: "593944369485",
+  appId: "1:593944369485:web:97c01475be5d50f2547f04"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DOC_REF = doc(db, "todo", "main");
+
+// ─── DEFAULT DATA ───
+const DEFAULT_DATA = [
+  {
+    id: "core", label: "Core HorecaTouch", color: "#1E3A5F", collapsed: false,
+    subcats: [
+      { id: "sc1", label: "Benchmarking concurrentie", collapsed: false, tasks: [
+        { id: "t1", text: "Facturen blijven verzamelen Lightspeed", prio: "Hoog", done: false, pos: 0 },
+        { id: "t2", text: "Lightspeed volledig in kaart brengen", prio: "Hoog", done: false, pos: 1 },
+        { id: "t3", text: "Benchmarking Lightspeed begrijpen", prio: "Hoog", done: false, pos: 2 },
+        { id: "t4", text: "Vergelijkingstool kostprijsberekening begrijpen", prio: "Hoog", done: false, pos: 3 },
+        { id: "t5", text: "Transactiekosten in kaart brengen", prio: "Middel", done: false, pos: 4 },
+        { id: "t6", text: "Reversed kostencalculatie", prio: "Middel", done: false, pos: 5 },
+      ]},
+      { id: "sc2", label: "Go-to-market", collapsed: false, tasks: [
+        { id: "t7", text: "Go-to-market strategie uitwerken (Simon Sinek)", prio: "Hoog", done: false, pos: 0 },
+        { id: "t8", text: "Vergelijkingstool op punt zetten voor demo's", prio: "Hoog", done: false, pos: 1 },
+        { id: "t9", text: "Waar moet er sales gezet worden — de baan opgaan", prio: "Hoog", done: false, pos: 2 },
+        { id: "t10", text: "Marketing uitwerken: hoe, website, naam", prio: "Middel", done: false, pos: 3 },
+      ]},
+      { id: "sc3", label: "Interne kennis", collapsed: false, tasks: [
+        { id: "t11", text: "Structuur houden in DRIVE", prio: "Middel", done: false, pos: 0 },
+        { id: "t12", text: "Demo van Charlotte volgen", prio: "Hoog", done: false, pos: 1 },
+        { id: "t13", text: "Kijkstage met Jens", prio: "Middel", done: false, pos: 2 },
+        { id: "t14", text: "Cowork leren kennen", prio: "Laag", done: false, pos: 3 },
+      ]},
+      { id: "sc4", label: "Payment systems", collapsed: false, tasks: [] },
+    ],
+    tasks: []
+  },
+  {
+    id: "pos4all", label: "POS4ALL", color: "#2D6A4F", collapsed: false, subcats: [],
+    tasks: [
+      { id: "t15", text: "Uitnodigen padelclubs — beginnen in eigen streek", prio: "Hoog", done: false, pos: 0 },
+      { id: "t16", text: "Uitnodigen voetbalclubs — beginnen in eigen streek", prio: "Hoog", done: false, pos: 1 },
+      { id: "t17", text: "Bakkerij ketens zoals Aernoudt aanspreken", prio: "Middel", done: false, pos: 2 },
+      { id: "t18", text: "Leadlijst maken met Claude", prio: "Hoog", done: false, pos: 3 },
+      { id: "t19", text: "Kappers benaderen", prio: "Laag", done: false, pos: 4 },
+    ]
+  },
+  {
+    id: "swipedrinks", label: "Swipedrinks", color: "#4C1D95", collapsed: false, subcats: [],
+    tasks: [
+      { id: "t20", text: "Uitnodigen alle golfclubs — 3 dagen ontbijtsessie bij golf Waregem en Schilde", prio: "Hoog", done: false, pos: 0 },
+    ]
+  },
+  {
+    id: "ander", label: "Ander", color: "#374151", collapsed: false, subcats: [], tasks: [] },
+];
+
+// ─── STATE ───
+let data = [];
+let activeFilter = "all";
+let dragTaskId = null, dragContainerId = null, dragContainerType = null;
+let saveTimer = null;
+let _id = Date.now();
+const uid = () => "id_" + (_id++);
+
+// ─── FIREBASE SYNC ───
+async function initData() {
+  try {
+    const snap = await getDoc(DOC_REF);
+    if (snap.exists()) {
+      data = snap.data().data;
+    } else {
+      data = DEFAULT_DATA;
+      await saveToFirebase();
+    }
+  } catch(e) {
+    console.error(e);
+    data = DEFAULT_DATA;
+  }
+  document.getElementById("loadingScreen").style.display = "none";
+  document.getElementById("appShell").style.display = "flex";
+  render();
+
+  // Listen for real-time updates from other devices
+  onSnapshot(DOC_REF, (snap) => {
+    if (snap.exists() && !saveTimer) {
+      data = snap.data().data;
+      render();
+    }
+  });
+}
+
+async function saveToFirebase() {
+  try {
+    await setDoc(DOC_REF, { data });
+    showSaved();
+  } catch(e) { console.error("Save failed:", e); }
+}
+
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    saveTimer = null;
+    await saveToFirebase();
+  }, 800);
+}
+
+function showSaved() {
+  const el = document.getElementById("savingIndicator");
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2000);
+}
+
+// ─── MUTATIONS ───
+function allTasks() {
+  let all = [];
+  data.forEach(c => { all = all.concat(c.tasks); c.subcats.forEach(s => all = all.concat(s.tasks)); });
+  return all;
+}
+
+window.toggleTask = (id) => { const t = allTasks().find(t=>t.id===id); if(t){ t.done=!t.done; scheduleSave(); render(); } };
+window.cyclePrio = (id) => { const t = allTasks().find(t=>t.id===id); if(t){ const p=["Hoog","Middel","Laag"]; t.prio=p[(p.indexOf(t.prio)+1)%3]; scheduleSave(); render(); } };
+window.deleteTask = (id) => { data.forEach(c => { c.tasks=c.tasks.filter(t=>t.id!==id); c.subcats.forEach(s=>{s.tasks=s.tasks.filter(t=>t.id!==id);}); }); scheduleSave(); render(); };
+window.toggleCat = (id) => { const c=data.find(c=>c.id===id); if(c){c.collapsed=!c.collapsed; scheduleSave(); render();} };
+window.deleteCat = (id) => { if(!confirm("Categorie verwijderen?")) return; data=data.filter(c=>c.id!==id); if(activeFilter===id)activeFilter="all"; scheduleSave(); render(); };
+window.toggleSubcat = (catId,scId) => { const c=data.find(c=>c.id===catId); const s=c&&c.subcats.find(s=>s.id===scId); if(s){s.collapsed=!s.collapsed; scheduleSave(); render();} };
+window.deleteSubcat = (catId,scId) => { if(!confirm("Subcategorie verwijderen?"))return; const c=data.find(c=>c.id===catId); if(c){c.subcats=c.subcats.filter(s=>s.id!==scId); scheduleSave(); render();} };
+
+window.addSubcat = (catId) => {
+  const inp=document.getElementById("sc-inp-"+catId); const name=inp.value.trim(); if(!name)return;
+  const c=data.find(c=>c.id===catId); if(c){c.subcats.push({id:uid(),label:name,collapsed:false,tasks:[]});} inp.value=""; scheduleSave(); render();
+};
+
+window.addTaskCat = (catId) => {
+  const inp=document.getElementById("ti-cat-"+catId); const sel=document.getElementById("tp-cat-"+catId);
+  const text=inp.value.trim(); if(!text)return;
+  const c=data.find(c=>c.id===catId); if(c){c.tasks.push({id:uid(),text,prio:sel.value,done:false,pos:c.tasks.length});}
+  inp.value=""; scheduleSave(); render();
+};
+
+window.addTaskSc = (catId,scId) => {
+  const inp=document.getElementById("ti-sc-"+scId); const sel=document.getElementById("tp-sc-"+scId);
+  const text=inp.value.trim(); if(!text)return;
+  const c=data.find(c=>c.id===catId); const s=c&&c.subcats.find(s=>s.id===scId);
+  if(s){s.tasks.push({id:uid(),text,prio:sel.value,done:false,pos:s.tasks.length});}
+  inp.value=""; scheduleSave(); render();
+};
+
+window.setFilter = (id) => { activeFilter=id; render(); };
+
+// ─── MODAL ───
+window.openModal = () => { document.getElementById("modalOverlay").classList.add("open"); document.getElementById("modalCatName").focus(); };
+window.closeModal = () => document.getElementById("modalOverlay").classList.remove("open");
+window.confirmAddCat = () => {
+  const name=document.getElementById("modalCatName").value.trim(); const color=document.getElementById("modalCatColor").value;
+  if(!name)return; data.push({id:uid(),label:name,color,collapsed:false,subcats:[],tasks:[]});
+  document.getElementById("modalCatName").value=""; closeModal(); scheduleSave(); render();
+};
+
+// ─── DRAG & DROP ───
+window.onDragStart = (e,taskId,cId,cType) => {
+  dragTaskId=taskId; dragContainerId=cId; dragContainerType=cType; e.dataTransfer.effectAllowed="move";
+  setTimeout(()=>{ const el=document.querySelector(`[data-tid="${taskId}"]`); if(el)el.classList.add("dragging"); },0);
+};
+window.onDragOver = (e,taskId) => { e.preventDefault(); document.querySelectorAll(".task-item").forEach(el=>el.classList.remove("drag-over")); const el=document.querySelector(`[data-tid="${taskId}"]`); if(el)el.classList.add("drag-over"); };
+window.onDrop = (e,targetId,cId,cType) => {
+  e.preventDefault(); document.querySelectorAll(".task-item").forEach(el=>{el.classList.remove("drag-over");el.classList.remove("dragging");});
+  if(!dragTaskId||dragTaskId===targetId||dragContainerId!==cId||dragContainerType!==cType)return;
+  const getList=()=>{ if(cType==="cat"){const c=data.find(c=>c.id===cId);return c?c.tasks:null;} for(const c of data){const s=c.subcats.find(s=>s.id===cId);if(s)return s.tasks;} return null; };
+  const list=getList(); if(!list)return;
+  const fi=list.findIndex(t=>t.id===dragTaskId); const ti=list.findIndex(t=>t.id===targetId);
+  if(fi===-1||ti===-1)return; const [moved]=list.splice(fi,1); list.splice(ti,0,moved);
+  dragTaskId=null; scheduleSave(); render();
+};
+
+// ─── EXPORT ───
+window.exportCSV = () => {
+  const rows=[["Taak","Categorie","Subcategorie","Prioriteit","Status"]];
+  data.forEach(c=>{
+    c.tasks.forEach(t=>rows.push([`"${t.text}"`,c.label,"",t.prio,t.done?"Afgewerkt":"Open"]));
+    c.subcats.forEach(s=>s.tasks.forEach(t=>rows.push([`"${t.text}"`,c.label,s.label,t.prio,t.done?"Afgewerkt":"Open"])));
+  });
+  const csv=rows.map(r=>r.join(";")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="todo_horecatouch.csv"; a.click();
+};
+
+// ─── RENDER ───
+function render() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const filterPrio = document.getElementById("filterPrio").value;
+  const filterTask = t => { if(filterPrio&&t.prio!==filterPrio)return false; if(search&&!t.text.toLowerCase().includes(search))return false; return true; };
+
+  const all = allTasks();
+  const done = all.filter(t=>t.done).length;
+  const total = all.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById("progressSummary").textContent = `${done} / ${total} afgewerkt`;
+  document.getElementById("globalProgress").style.width = pct + "%";
+
+  const allOpen = all.filter(t=>!t.done).length;
+  document.getElementById("sidebarNav").innerHTML = `
+    <div class="nav-label">Overzicht</div>
+    <button class="nav-item ${activeFilter==="all"?"active":""}" onclick="setFilter('all')">
+      <span>Alle taken</span><span class="nav-count">${allOpen}</span>
+    </button>
+    <div class="nav-label">Categorieën</div>
+    ${data.map(c=>{
+      const co=[...c.tasks,...c.subcats.flatMap(s=>s.tasks)].filter(t=>!t.done).length;
+      return `<button class="nav-item ${activeFilter===c.id?"active":""}" onclick="setFilter('${c.id}')">
+        <span class="nav-dot" style="background:${c.color}"></span><span>${c.label}</span><span class="nav-count">${co}</span>
+      </button>`;
+    }).join("")}
+  `;
+
+  document.getElementById("topbarTitle").textContent = activeFilter === "all" ? "Alle taken" : (data.find(c=>c.id===activeFilter)?.label || "Taken");
+
+  const taskHTML = (t,cId,cType) => `
+    <div class="task-item ${t.done?"done":""}" data-tid="${t.id}" draggable="true"
+      ondragstart="onDragStart(event,'${t.id}','${cId}','${cType}')"
+      ondragover="onDragOver(event,'${t.id}')"
+      ondrop="onDrop(event,'${t.id}','${cId}','${cType}')">
+      <span class="drag-handle">⠿</span>
+      <div class="task-check ${t.done?"checked":""}" onclick="toggleTask('${t.id}')"></div>
+      <span class="task-text ${t.done?"done":""}">${t.text}</span>
+      <div class="task-right">
+        <span class="prio-pill prio-${t.prio}" onclick="cyclePrio('${t.id}')">${t.prio}</span>
+        <button class="task-del" onclick="deleteTask('${t.id}')">✕</button>
+      </div>
+    </div>`;
+
+  const addTaskRow = (catId, scId) => {
+    const isSc = scId !== null;
+    const id1 = isSc ? scId : catId;
+    const fn = isSc ? `addTaskSc('${catId}','${scId}')` : `addTaskCat('${catId}')`;
+    const pfx = isSc ? "sc" : "cat";
+    return `<div class="add-task-row">
+      <input type="text" id="ti-${pfx}-${id1}" placeholder="Taak toevoegen..." onkeydown="if(event.key==='Enter') ${fn}">
+      <select id="tp-${pfx}-${id1}"><option value="Hoog">Hoog</option><option value="Middel" selected>Middel</option><option value="Laag">Laag</option></select>
+      <button class="add-btn" onclick="${fn}">+ Taak</button>
+    </div>`;
+  };
+
+  const filtered = activeFilter === "all" ? data : data.filter(c=>c.id===activeFilter);
+
+  document.getElementById("content").innerHTML = filtered.map(cat => {
+    const catAll = [...cat.tasks,...cat.subcats.flatMap(s=>s.tasks)];
+    const catOpen = catAll.filter(t=>!t.done).length;
+    const catTotal = catAll.length;
+    const catPct = catTotal ? Math.round((catTotal-catOpen)/catTotal*100) : 0;
+
+    const subcatsHTML = cat.subcats.map(sc => {
+      const scFiltered = sc.tasks.filter(filterTask);
+      const scOpen = sc.tasks.filter(t=>!t.done).length;
+      return `<div class="subcat-wrap">
+        <div class="subcat-head" onclick="toggleSubcat('${cat.id}','${sc.id}')">
+          <span style="color:var(--text-muted);font-size:11px">${sc.collapsed?"▸":"▾"}</span>
+          <span class="subcat-name">${sc.label}</span>
+          <span class="subcat-count">${scOpen} open</span>
+          <button class="icon-btn danger" style="margin-left:6px" onclick="event.stopPropagation();deleteSubcat('${cat.id}','${sc.id}')">✕</button>
+        </div>
+        ${sc.collapsed ? "" : `
+          ${scFiltered.length===0 ? `<div class="empty-state">Nog geen taken — voeg er hieronder een toe</div>` : scFiltered.map(t=>taskHTML(t,sc.id,"sc")).join("")}
+          ${addTaskRow(cat.id, sc.id)}
+        `}
+      </div>`;
+    }).join("");
+
+    const catTasksFiltered = cat.tasks.filter(filterTask);
+
+    return `<div class="cat-card">
+      <div class="cat-head" onclick="toggleCat('${cat.id}')">
+        <div class="cat-stripe" style="background:${cat.color}"></div>
+        <div class="cat-name">${cat.label}</div>
+        <div class="cat-meta">${catOpen} open · ${catTotal} totaal</div>
+        <div class="cat-prog"><div class="cat-prog-fill" style="width:${catPct}%;background:${cat.color}"></div></div>
+        <div class="cat-actions" onclick="event.stopPropagation()">
+          <button class="icon-btn danger" onclick="deleteCat('${cat.id}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+          <button class="icon-btn">
+            <span class="chevron ${cat.collapsed?"":"open"}">›</span>
+          </button>
+        </div>
+      </div>
+      ${cat.collapsed ? "" : `
+        ${subcatsHTML}
+        <div class="add-subcat-row">
+          <span class="lbl">+ Subcategorie:</span>
+          <input type="text" id="sc-inp-${cat.id}" placeholder="Nieuwe subcategorie..." onkeydown="if(event.key==='Enter') addSubcat('${cat.id}')">
+          <button class="add-btn" onclick="addSubcat('${cat.id}')">Toevoegen</button>
+        </div>
+        ${cat.tasks.length > 0 ? `<div class="general-lbl">Algemeen</div>${catTasksFiltered.map(t=>taskHTML(t,cat.id,"cat")).join("")}` : ""}
+        ${addTaskRow(cat.id, null)}
+      `}
+    </div>`;
+  }).join("");
+}
+
+document.getElementById("modalOverlay").addEventListener("click", e => { if(e.target===e.currentTarget) closeModal(); });
+document.getElementById("modalCatName").addEventListener("keydown", e => { if(e.key==="Enter") confirmAddCat(); });
+
+initData();
+</script>
+</body>
+</html>
