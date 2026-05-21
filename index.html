@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>To-Do App — Werklijst</title>
+<title>HorecaTouch — Werklijst</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -246,7 +246,7 @@
     <button class="sidebar-close" onclick="window.toggleSidebar()">✕</button>
     <div class="sidebar-logo">
       <div class="logo-mark">Werklijst</div>
-      <div class="logo-name">Mijn To-Do</div>
+      <div class="logo-name">HorecaTouch</div>
       <div class="logo-sync"><span class="sync-dot"></span> Live gesynchroniseerd</div>
     </div>
     <nav class="sidebar-nav" id="sidebarNav"></nav>
@@ -305,14 +305,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  // ← Vervang dit met jouw eigen Firebase config
-  // Ga naar console.firebase.google.com → jouw project → Project Settings → Your apps
-  apiKey: "JOUW_API_KEY",
-  authDomain: "JOUW_PROJECT.firebaseapp.com",
-  projectId: "JOUW_PROJECT_ID",
-  storageBucket: "JOUW_PROJECT.firebasestorage.app",
-  messagingSenderId: "JOUW_SENDER_ID",
-  appId: "JOUW_APP_ID"
+  apiKey: "AIzaSyArC2KgrW8V9Wd02Q24FP4RXEXF5ydbyiY",
+  authDomain: "horecatouch-todo.firebaseapp.com",
+  projectId: "horecatouch-todo",
+  storageBucket: "horecatouch-todo.firebasestorage.app",
+  messagingSenderId: "593944369485",
+  appId: "1:593944369485:web:97c01475be5d50f2547f04"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -322,38 +320,50 @@ const DOC_REF = doc(db, "todo", "main");
 // ─── DEFAULT DATA ───
 const DEFAULT_DATA = [
   {
-    id: "cat1", label: "Projecten", color: "#1E3A5F", collapsed: false,
+    id: "core", label: "Core HorecaTouch", color: "#1E3A5F", collapsed: false,
     subcats: [
-      { id: "sc1", label: "Planning", collapsed: false, tasks: [
-        { id: "t1", text: "Projectscope definiëren", prio: "Hoog", done: false, pos: 0 },
-        { id: "t2", text: "Deadline bepalen", prio: "Hoog", done: false, pos: 1 },
-        { id: "t3", text: "Team samenstellen", prio: "Middel", done: false, pos: 2 },
+      { id: "sc1", label: "Benchmarking concurrentie", collapsed: false, tasks: [
+        { id: "t1", text: "Facturen blijven verzamelen Lightspeed", prio: "Hoog", done: false, pos: 0 },
+        { id: "t2", text: "Lightspeed volledig in kaart brengen", prio: "Hoog", done: false, pos: 1 },
+        { id: "t3", text: "Benchmarking Lightspeed begrijpen", prio: "Hoog", done: false, pos: 2 },
+        { id: "t4", text: "Vergelijkingstool kostprijsberekening begrijpen", prio: "Hoog", done: false, pos: 3 },
+        { id: "t5", text: "Transactiekosten in kaart brengen", prio: "Middel", done: false, pos: 4 },
+        { id: "t6", text: "Reversed kostencalculatie", prio: "Middel", done: false, pos: 5 },
       ]},
-      { id: "sc2", label: "Uitvoering", collapsed: false, tasks: [
-        { id: "t4", text: "Eerste versie opleveren", prio: "Hoog", done: false, pos: 0 },
-        { id: "t5", text: "Feedback verwerken", prio: "Middel", done: false, pos: 1 },
+      { id: "sc2", label: "Go-to-market", collapsed: false, tasks: [
+        { id: "t7", text: "Go-to-market strategie uitwerken (Simon Sinek)", prio: "Hoog", done: false, pos: 0 },
+        { id: "t8", text: "Vergelijkingstool op punt zetten voor demo's", prio: "Hoog", done: false, pos: 1 },
+        { id: "t9", text: "Waar moet er sales gezet worden — de baan opgaan", prio: "Hoog", done: false, pos: 2 },
+        { id: "t10", text: "Marketing uitwerken: hoe, website, naam", prio: "Middel", done: false, pos: 3 },
       ]},
+      { id: "sc3", label: "Interne kennis", collapsed: false, tasks: [
+        { id: "t11", text: "Structuur houden in DRIVE", prio: "Middel", done: false, pos: 0 },
+        { id: "t12", text: "Demo van Charlotte volgen", prio: "Hoog", done: false, pos: 1 },
+        { id: "t13", text: "Kijkstage met Jens", prio: "Middel", done: false, pos: 2 },
+        { id: "t14", text: "Cowork leren kennen", prio: "Laag", done: false, pos: 3 },
+      ]},
+      { id: "sc4", label: "Payment systems", collapsed: false, tasks: [] },
     ],
     tasks: []
   },
   {
-    id: "cat2", label: "Administratie", color: "#2D6A4F", collapsed: false, subcats: [],
+    id: "pos4all", label: "POS4ALL", color: "#2D6A4F", collapsed: false, subcats: [],
     tasks: [
-      { id: "t6", text: "Facturen verwerken", prio: "Hoog", done: false, pos: 0 },
-      { id: "t7", text: "Rapporten opstellen", prio: "Middel", done: false, pos: 1 },
-      { id: "t8", text: "Archief bijwerken", prio: "Laag", done: false, pos: 2 },
+      { id: "t15", text: "Uitnodigen padelclubs — beginnen in eigen streek", prio: "Hoog", done: false, pos: 0 },
+      { id: "t16", text: "Uitnodigen voetbalclubs — beginnen in eigen streek", prio: "Hoog", done: false, pos: 1 },
+      { id: "t17", text: "Bakkerij ketens zoals Aernoudt aanspreken en voorstel doen", prio: "Middel", done: false, pos: 2 },
+      { id: "t18", text: "Leadlijst maken met Claude", prio: "Hoog", done: false, pos: 3 },
+      { id: "t19", text: "Kappers benaderen", prio: "Laag", done: false, pos: 4 },
     ]
   },
   {
-    id: "cat3", label: "Persoonlijk", color: "#4C1D95", collapsed: false, subcats: [],
+    id: "swipedrinks", label: "Swipedrinks", color: "#4C1D95", collapsed: false, subcats: [],
     tasks: [
-      { id: "t9", text: "Voorbeeld taak 1", prio: "Middel", done: false, pos: 0 },
-      { id: "t10", text: "Voorbeeld taak 2", prio: "Laag", done: false, pos: 1 },
+      { id: "t20", text: "Uitnodigen alle golfclubs — 3 dagen ontbijtsessie bij golf Waregem en Schilde", prio: "Hoog", done: false, pos: 0 },
     ]
   },
   {
-    id: "cat4", label: "Ander", color: "#374151", collapsed: false, subcats: [], tasks: []
-  },
+    id: "ander", label: "Ander", color: "#374151", collapsed: false, subcats: [], tasks: [] },
 ];
 
 // ─── STATE ───
