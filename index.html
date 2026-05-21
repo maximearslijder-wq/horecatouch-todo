@@ -43,13 +43,32 @@
     width: 240px; background: var(--surface); border-right: 1px solid var(--border);
     display: flex; flex-direction: column; padding: 28px 0;
     position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; overflow-y: auto;
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
   }
+  .sidebar.hidden { transform: translateX(-100%); }
+
+  /* Mobile overlay behind sidebar */
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    z-index: 99; opacity: 0; transition: opacity 0.25s;
+  }
+  .sidebar-overlay.show { display: block; opacity: 1; }
+
   .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
   .logo-mark { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
   .logo-name { font-size: 17px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; }
   .logo-sync { font-size: 10px; color: var(--green); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
   .sync-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Close button inside sidebar (mobile) */
+  .sidebar-close {
+    display: none; position: absolute; top: 16px; right: 14px;
+    width: 32px; height: 32px; border: none; background: var(--accent-soft);
+    border-radius: var(--radius-sm); cursor: pointer; font-size: 18px;
+    color: var(--text-secondary); align-items: center; justify-content: center;
+  }
+  @media (max-width: 768px) { .sidebar-close { display: flex; } }
 
   .sidebar-nav { flex: 1; padding: 0 12px; }
   .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); padding: 0 8px; margin: 16px 0 6px; }
@@ -70,12 +89,33 @@
   .progress-fill { height: 100%; background: var(--text-primary); border-radius: 2px; transition: width 0.4s ease; }
 
   /* MAIN */
-  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; transition: margin-left 0.28s cubic-bezier(0.4,0,0.2,1); }
+  .main.full { margin-left: 0; }
+
+  @media (max-width: 768px) {
+    .main { margin-left: 0 !important; }
+    .sidebar { box-shadow: 4px 0 20px rgba(0,0,0,0.12); }
+    .search-input { width: 130px !important; }
+    .search-input:focus { width: 160px !important; }
+    .prio-filter { display: none; }
+    .content { padding: 16px !important; }
+  }
+
   .topbar {
     background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 14px;
+    padding: 0 20px; height: 60px; display: flex; align-items: center; gap: 14px;
     position: sticky; top: 0; z-index: 50;
   }
+
+  /* Hamburger / toggle button */
+  .menu-toggle {
+    width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface-2);
+    border-radius: var(--radius-sm); cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px; flex-shrink: 0; transition: all 0.15s;
+  }
+  .menu-toggle:hover { background: var(--accent-soft); border-color: var(--border-strong); }
+  .menu-toggle span { display: block; width: 16px; height: 1.5px; background: var(--text-primary); border-radius: 2px; transition: all 0.2s; }
+
   .topbar-title { font-size: 15px; font-weight: 600; flex: 1; letter-spacing: -0.01em; }
   .search-wrap { position: relative; }
   .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
@@ -199,8 +239,11 @@
 
 <div class="saving-indicator" id="savingIndicator">💾 Opgeslagen</div>
 
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
 <div class="app-shell" id="appShell" style="display:none">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
     <div class="sidebar-logo">
       <div class="logo-mark">Werklijst</div>
       <div class="logo-name">HorecaTouch</div>
@@ -215,6 +258,9 @@
 
   <div class="main">
     <div class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()" title="Menu">
+        <span></span><span></span><span></span>
+      </button>
       <div class="topbar-title" id="topbarTitle">Alle taken</div>
       <div class="search-wrap">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -411,7 +457,51 @@ window.addTaskSc = (catId,scId) => {
   inp.value=""; scheduleSave(); render();
 };
 
-window.setFilter = (id) => { activeFilter=id; render(); };
+// ─── SIDEBAR TOGGLE ───
+const isMobile = () => window.innerWidth <= 768;
+
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("appShell").querySelector(".main");
+  const overlay = document.getElementById("sidebarOverlay");
+  const isHidden = sidebar.classList.contains("hidden");
+  if (isHidden) {
+    sidebar.classList.remove("hidden");
+    if (isMobile()) { overlay.classList.add("show"); }
+    else { main.classList.remove("full"); }
+  } else {
+    sidebar.classList.add("hidden");
+    overlay.classList.remove("show");
+    if (!isMobile()) { main.classList.add("full"); }
+  }
+}
+
+// On mobile: start with sidebar hidden
+if (isMobile()) {
+  document.getElementById("sidebar").classList.add("hidden");
+}
+
+window.addEventListener("resize", () => {
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("appShell").querySelector(".main");
+  const overlay = document.getElementById("sidebarOverlay");
+  if (!isMobile()) {
+    overlay.classList.remove("show");
+    if (!sidebar.classList.contains("hidden")) { main.classList.remove("full"); }
+  }
+});
+
+// Nav item click on mobile → close sidebar
+window.setFilter = (id) => {
+  activeFilter = id;
+  if (isMobile()) {
+    document.getElementById("sidebar").classList.add("hidden");
+    document.getElementById("sidebarOverlay").classList.remove("show");
+  }
+  render();
+};
+
+
 
 // ─── MODAL ───
 window.openModal = () => { document.getElementById("modalOverlay").classList.add("open"); document.getElementById("modalCatName").focus(); };
