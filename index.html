@@ -239,11 +239,11 @@
 
 <div class="saving-indicator" id="savingIndicator">💾 Opgeslagen</div>
 
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="window.toggleSidebar()"></div>
 
 <div class="app-shell" id="appShell" style="display:none">
   <aside class="sidebar" id="sidebar">
-    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+    <button class="sidebar-close" onclick="window.toggleSidebar()">✕</button>
     <div class="sidebar-logo">
       <div class="logo-mark">Werklijst</div>
       <div class="logo-name">HorecaTouch</div>
@@ -258,7 +258,7 @@
 
   <div class="main" id="mainContent">
     <div class="topbar">
-      <button class="menu-toggle" onclick="toggleSidebar()" title="Menu">
+      <button class="menu-toggle" onclick="window.toggleSidebar()" title="Menu">
         <span></span><span></span><span></span>
       </button>
       <div class="topbar-title" id="topbarTitle">Alle taken</div>
@@ -460,7 +460,7 @@ window.addTaskSc = (catId,scId) => {
 // ─── SIDEBAR TOGGLE ───
 const isMobile = () => window.innerWidth <= 768;
 
-function toggleSidebar() {
+window.toggleSidebar = function() {
   const sidebar = document.getElementById("sidebar");
   const main = document.getElementById("mainContent");
   const overlay = document.getElementById("sidebarOverlay");
