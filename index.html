@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HorecaTouch — Werklijst</title>
+<title>To-Do App — Werklijst</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -246,7 +246,7 @@
     <button class="sidebar-close" onclick="window.toggleSidebar()">✕</button>
     <div class="sidebar-logo">
       <div class="logo-mark">Werklijst</div>
-      <div class="logo-name">HorecaTouch</div>
+      <div class="logo-name">Mijn To-Do</div>
       <div class="logo-sync"><span class="sync-dot"></span> Live gesynchroniseerd</div>
     </div>
     <nav class="sidebar-nav" id="sidebarNav"></nav>
@@ -305,12 +305,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyArC2KgrW8V9Wd02Q24FP4RXEXF5ydbyiY",
-  authDomain: "horecatouch-todo.firebaseapp.com",
-  projectId: "horecatouch-todo",
-  storageBucket: "horecatouch-todo.firebasestorage.app",
-  messagingSenderId: "593944369485",
-  appId: "1:593944369485:web:97c01475be5d50f2547f04"
+  // ← Vervang dit met jouw eigen Firebase config
+  // Ga naar console.firebase.google.com → jouw project → Project Settings → Your apps
+  apiKey: "JOUW_API_KEY",
+  authDomain: "JOUW_PROJECT.firebaseapp.com",
+  projectId: "JOUW_PROJECT_ID",
+  storageBucket: "JOUW_PROJECT.firebasestorage.app",
+  messagingSenderId: "JOUW_SENDER_ID",
+  appId: "JOUW_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -320,50 +322,38 @@ const DOC_REF = doc(db, "todo", "main");
 // ─── DEFAULT DATA ───
 const DEFAULT_DATA = [
   {
-    id: "core", label: "Core HorecaTouch", color: "#1E3A5F", collapsed: false,
+    id: "cat1", label: "Projecten", color: "#1E3A5F", collapsed: false,
     subcats: [
-      { id: "sc1", label: "Benchmarking concurrentie", collapsed: false, tasks: [
-        { id: "t1", text: "Facturen blijven verzamelen Lightspeed", prio: "Hoog", done: false, pos: 0 },
-        { id: "t2", text: "Lightspeed volledig in kaart brengen", prio: "Hoog", done: false, pos: 1 },
-        { id: "t3", text: "Benchmarking Lightspeed begrijpen", prio: "Hoog", done: false, pos: 2 },
-        { id: "t4", text: "Vergelijkingstool kostprijsberekening begrijpen", prio: "Hoog", done: false, pos: 3 },
-        { id: "t5", text: "Transactiekosten in kaart brengen", prio: "Middel", done: false, pos: 4 },
-        { id: "t6", text: "Reversed kostencalculatie", prio: "Middel", done: false, pos: 5 },
+      { id: "sc1", label: "Planning", collapsed: false, tasks: [
+        { id: "t1", text: "Projectscope definiëren", prio: "Hoog", done: false, pos: 0 },
+        { id: "t2", text: "Deadline bepalen", prio: "Hoog", done: false, pos: 1 },
+        { id: "t3", text: "Team samenstellen", prio: "Middel", done: false, pos: 2 },
       ]},
-      { id: "sc2", label: "Go-to-market", collapsed: false, tasks: [
-        { id: "t7", text: "Go-to-market strategie uitwerken (Simon Sinek)", prio: "Hoog", done: false, pos: 0 },
-        { id: "t8", text: "Vergelijkingstool op punt zetten voor demo's", prio: "Hoog", done: false, pos: 1 },
-        { id: "t9", text: "Waar moet er sales gezet worden — de baan opgaan", prio: "Hoog", done: false, pos: 2 },
-        { id: "t10", text: "Marketing uitwerken: hoe, website, naam", prio: "Middel", done: false, pos: 3 },
+      { id: "sc2", label: "Uitvoering", collapsed: false, tasks: [
+        { id: "t4", text: "Eerste versie opleveren", prio: "Hoog", done: false, pos: 0 },
+        { id: "t5", text: "Feedback verwerken", prio: "Middel", done: false, pos: 1 },
       ]},
-      { id: "sc3", label: "Interne kennis", collapsed: false, tasks: [
-        { id: "t11", text: "Structuur houden in DRIVE", prio: "Middel", done: false, pos: 0 },
-        { id: "t12", text: "Demo van Charlotte volgen", prio: "Hoog", done: false, pos: 1 },
-        { id: "t13", text: "Kijkstage met Jens", prio: "Middel", done: false, pos: 2 },
-        { id: "t14", text: "Cowork leren kennen", prio: "Laag", done: false, pos: 3 },
-      ]},
-      { id: "sc4", label: "Payment systems", collapsed: false, tasks: [] },
     ],
     tasks: []
   },
   {
-    id: "pos4all", label: "POS4ALL", color: "#2D6A4F", collapsed: false, subcats: [],
+    id: "cat2", label: "Administratie", color: "#2D6A4F", collapsed: false, subcats: [],
     tasks: [
-      { id: "t15", text: "Uitnodigen padelclubs — beginnen in eigen streek", prio: "Hoog", done: false, pos: 0 },
-      { id: "t16", text: "Uitnodigen voetbalclubs — beginnen in eigen streek", prio: "Hoog", done: false, pos: 1 },
-      { id: "t17", text: "Bakkerij ketens zoals Aernoudt aanspreken", prio: "Middel", done: false, pos: 2 },
-      { id: "t18", text: "Leadlijst maken met Claude", prio: "Hoog", done: false, pos: 3 },
-      { id: "t19", text: "Kappers benaderen", prio: "Laag", done: false, pos: 4 },
+      { id: "t6", text: "Facturen verwerken", prio: "Hoog", done: false, pos: 0 },
+      { id: "t7", text: "Rapporten opstellen", prio: "Middel", done: false, pos: 1 },
+      { id: "t8", text: "Archief bijwerken", prio: "Laag", done: false, pos: 2 },
     ]
   },
   {
-    id: "swipedrinks", label: "Swipedrinks", color: "#4C1D95", collapsed: false, subcats: [],
+    id: "cat3", label: "Persoonlijk", color: "#4C1D95", collapsed: false, subcats: [],
     tasks: [
-      { id: "t20", text: "Uitnodigen alle golfclubs — 3 dagen ontbijtsessie bij golf Waregem en Schilde", prio: "Hoog", done: false, pos: 0 },
+      { id: "t9", text: "Voorbeeld taak 1", prio: "Middel", done: false, pos: 0 },
+      { id: "t10", text: "Voorbeeld taak 2", prio: "Laag", done: false, pos: 1 },
     ]
   },
   {
-    id: "ander", label: "Ander", color: "#374151", collapsed: false, subcats: [], tasks: [] },
+    id: "cat4", label: "Ander", color: "#374151", collapsed: false, subcats: [], tasks: []
+  },
 ];
 
 // ─── STATE ───
@@ -512,20 +502,101 @@ window.confirmAddCat = () => {
   document.getElementById("modalCatName").value=""; closeModal(); scheduleSave(); render();
 };
 
-// ─── DRAG & DROP ───
-window.onDragStart = (e,taskId,cId,cType) => {
-  dragTaskId=taskId; dragContainerId=cId; dragContainerType=cType; e.dataTransfer.effectAllowed="move";
-  setTimeout(()=>{ const el=document.querySelector(`[data-tid="${taskId}"]`); if(el)el.classList.add("dragging"); },0);
+// ─── DRAG & DROP (cross-category) ───
+window.onDragStart = (e, taskId) => {
+  dragTaskId = taskId;
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", taskId);
+  setTimeout(() => {
+    const el = document.querySelector(`[data-tid="${taskId}"]`);
+    if (el) el.classList.add("dragging");
+  }, 0);
 };
-window.onDragOver = (e,taskId) => { e.preventDefault(); document.querySelectorAll(".task-item").forEach(el=>el.classList.remove("drag-over")); const el=document.querySelector(`[data-tid="${taskId}"]`); if(el)el.classList.add("drag-over"); };
-window.onDrop = (e,targetId,cId,cType) => {
-  e.preventDefault(); document.querySelectorAll(".task-item").forEach(el=>{el.classList.remove("drag-over");el.classList.remove("dragging");});
-  if(!dragTaskId||dragTaskId===targetId||dragContainerId!==cId||dragContainerType!==cType)return;
-  const getList=()=>{ if(cType==="cat"){const c=data.find(c=>c.id===cId);return c?c.tasks:null;} for(const c of data){const s=c.subcats.find(s=>s.id===cId);if(s)return s.tasks;} return null; };
-  const list=getList(); if(!list)return;
-  const fi=list.findIndex(t=>t.id===dragTaskId); const ti=list.findIndex(t=>t.id===targetId);
-  if(fi===-1||ti===-1)return; const [moved]=list.splice(fi,1); list.splice(ti,0,moved);
-  dragTaskId=null; scheduleSave(); render();
+
+window.onDragOver = (e, taskId) => {
+  e.preventDefault();
+  e.stopPropagation();
+  document.querySelectorAll(".task-item").forEach(el => el.classList.remove("drag-over"));
+  const el = document.querySelector(`[data-tid="${taskId}"]`);
+  if (el) el.classList.add("drag-over");
+};
+
+window.onDragOverContainer = (e) => {
+  e.preventDefault();
+};
+
+window.onDropContainer = (e, catId, scId) => {
+  e.preventDefault();
+  document.querySelectorAll(".task-item, .drag-over").forEach(el => { el.classList.remove("drag-over"); el.classList.remove("dragging"); });
+  if (!dragTaskId) return;
+
+  // Find and remove task from wherever it currently is
+  let movedTask = null;
+  data.forEach(c => {
+    const idx = c.tasks.findIndex(t => t.id === dragTaskId);
+    if (idx !== -1) { movedTask = c.tasks.splice(idx, 1)[0]; return; }
+    c.subcats.forEach(s => {
+      const sidx = s.tasks.findIndex(t => t.id === dragTaskId);
+      if (sidx !== -1) { movedTask = s.tasks.splice(sidx, 1)[0]; }
+    });
+  });
+
+  if (!movedTask) { dragTaskId = null; return; }
+
+  // Insert into target container
+  if (scId) {
+    const cat = data.find(c => c.id === catId);
+    const sc = cat && cat.subcats.find(s => s.id === scId);
+    if (sc) sc.tasks.push(movedTask);
+  } else {
+    const cat = data.find(c => c.id === catId);
+    if (cat) cat.tasks.push(movedTask);
+  }
+
+  dragTaskId = null;
+  scheduleSave();
+  render();
+};
+
+window.onDrop = (e, targetId, catId, scId) => {
+  e.preventDefault();
+  e.stopPropagation();
+  document.querySelectorAll(".task-item").forEach(el => { el.classList.remove("drag-over"); el.classList.remove("dragging"); });
+  if (!dragTaskId) return;
+
+  // Find and remove from source
+  let movedTask = null;
+  data.forEach(c => {
+    const idx = c.tasks.findIndex(t => t.id === dragTaskId);
+    if (idx !== -1) { movedTask = c.tasks.splice(idx, 1)[0]; return; }
+    c.subcats.forEach(s => {
+      const sidx = s.tasks.findIndex(t => t.id === dragTaskId);
+      if (sidx !== -1) { movedTask = s.tasks.splice(sidx, 1)[0]; }
+    });
+  });
+
+  if (!movedTask) { dragTaskId = null; return; }
+
+  // Insert at target position
+  let targetList = null;
+  if (scId) {
+    const cat = data.find(c => c.id === catId);
+    const sc = cat && cat.subcats.find(s => s.id === scId);
+    if (sc) targetList = sc.tasks;
+  } else {
+    const cat = data.find(c => c.id === catId);
+    if (cat) targetList = cat.tasks;
+  }
+
+  if (targetList) {
+    const ti = targetList.findIndex(t => t.id === targetId);
+    if (ti !== -1) targetList.splice(ti, 0, movedTask);
+    else targetList.push(movedTask);
+  }
+
+  dragTaskId = null;
+  scheduleSave();
+  render();
 };
 
 // ─── EXPORT ───
@@ -570,11 +641,11 @@ function render() {
 
   document.getElementById("topbarTitle").textContent = activeFilter === "all" ? "Alle taken" : (data.find(c=>c.id===activeFilter)?.label || "Taken");
 
-  const taskHTML = (t,cId,cType) => `
+  const taskHTML = (t, catId, scId) => `
     <div class="task-item ${t.done?"done":""}" data-tid="${t.id}" draggable="true"
-      ondragstart="onDragStart(event,'${t.id}','${cId}','${cType}')"
+      ondragstart="onDragStart(event,'${t.id}')"
       ondragover="onDragOver(event,'${t.id}')"
-      ondrop="onDrop(event,'${t.id}','${cId}','${cType}')">
+      ondrop="onDrop(event,'${t.id}','${catId}',${scId?`'${scId}'`:'null'})">
       <span class="drag-handle">⠿</span>
       <div class="task-check ${t.done?"checked":""}" onclick="toggleTask('${t.id}')"></div>
       <span class="task-text ${t.done?"done":""}">${t.text}</span>
@@ -607,7 +678,7 @@ function render() {
     const subcatsHTML = cat.subcats.map(sc => {
       const scFiltered = sc.tasks.filter(filterTask);
       const scOpen = sc.tasks.filter(t=>!t.done).length;
-      return `<div class="subcat-wrap">
+      return `<div class="subcat-wrap" ondragover="onDragOverContainer(event)" ondrop="onDropContainer(event,'${cat.id}','${sc.id}')">
         <div class="subcat-head" onclick="toggleSubcat('${cat.id}','${sc.id}')">
           <span style="color:var(--text-muted);font-size:11px">${sc.collapsed?"▸":"▾"}</span>
           <span class="subcat-name">${sc.label}</span>
@@ -615,7 +686,7 @@ function render() {
           <button class="icon-btn danger" style="margin-left:6px" onclick="event.stopPropagation();deleteSubcat('${cat.id}','${sc.id}')">✕</button>
         </div>
         ${sc.collapsed ? "" : `
-          ${scFiltered.length===0 ? `<div class="empty-state">Nog geen taken — voeg er hieronder een toe</div>` : scFiltered.map(t=>taskHTML(t,sc.id,"sc")).join("")}
+          ${scFiltered.length===0 ? `<div class="empty-state">Sleep hier taken naartoe of voeg er hieronder een toe</div>` : scFiltered.map(t=>taskHTML(t,cat.id,sc.id)).join("")}
           ${addTaskRow(cat.id, sc.id)}
         `}
       </div>`;
@@ -623,7 +694,7 @@ function render() {
 
     const catTasksFiltered = cat.tasks.filter(filterTask);
 
-    return `<div class="cat-card">
+    return `<div class="cat-card" ondragover="onDragOverContainer(event)" ondrop="onDropContainer(event,'${cat.id}',null)">
       <div class="cat-head" onclick="toggleCat('${cat.id}')">
         <div class="cat-stripe" style="background:${cat.color}"></div>
         <div class="cat-name">${cat.label}</div>
@@ -645,7 +716,7 @@ function render() {
           <input type="text" id="sc-inp-${cat.id}" placeholder="Nieuwe subcategorie..." onkeydown="if(event.key==='Enter') addSubcat('${cat.id}')">
           <button class="add-btn" onclick="addSubcat('${cat.id}')">Toevoegen</button>
         </div>
-        ${cat.tasks.length > 0 ? `<div class="general-lbl">Algemeen</div>${catTasksFiltered.map(t=>taskHTML(t,cat.id,"cat")).join("")}` : ""}
+        ${cat.tasks.length > 0 || catTasksFiltered.length > 0 ? `<div class="general-lbl">Algemeen</div>${catTasksFiltered.map(t=>taskHTML(t,cat.id,null)).join("")}` : ""}
         ${addTaskRow(cat.id, null)}
       `}
     </div>`;
@@ -654,6 +725,10 @@ function render() {
 
 document.getElementById("modalOverlay").addEventListener("click", e => { if(e.target===e.currentTarget) closeModal(); });
 document.getElementById("modalCatName").addEventListener("keydown", e => { if(e.key==="Enter") confirmAddCat(); });
+
+// Fix 2 & 3: search and priority filter trigger render live
+document.getElementById("searchInput").addEventListener("input", render);
+document.getElementById("filterPrio").addEventListener("change", render);
 
 initData();
 </script>
