@@ -256,7 +256,7 @@
     </div>
   </aside>
 
-  <div class="main">
+  <div class="main" id="mainContent">
     <div class="topbar">
       <button class="menu-toggle" onclick="toggleSidebar()" title="Menu">
         <span></span><span></span><span></span>
@@ -462,7 +462,7 @@ const isMobile = () => window.innerWidth <= 768;
 
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
-  const main = document.getElementById("appShell").querySelector(".main");
+  const main = document.getElementById("mainContent");
   const overlay = document.getElementById("sidebarOverlay");
   const isHidden = sidebar.classList.contains("hidden");
   if (isHidden) {
@@ -483,7 +483,7 @@ if (isMobile()) {
 
 window.addEventListener("resize", () => {
   const sidebar = document.getElementById("sidebar");
-  const main = document.getElementById("appShell").querySelector(".main");
+  const main = document.getElementById("mainContent");
   const overlay = document.getElementById("sidebarOverlay");
   if (!isMobile()) {
     overlay.classList.remove("show");
